@@ -81,16 +81,16 @@ const CreatePost = () => {
     <section className="max-w-7xl mx-auto">
       <div>
         <h1 className="font-extrabold text-[#222328] text-[32px]">Create</h1>
-        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Create imaginative image through DALL-E AI and share it with the community</p>
+        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Below enter your name then add some descriptive prompts and let DALL-E AI do magic. Share it with the community when satified with the results</p>
       </div>
 
       <form className="mt-16 max-w-3xl" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-5">
           <FormField
-            labelName="Your Name"
+            labelName="Your Name or Alias"
             type="text"
             name="name"
-            placeholder="Ex., john doe"
+            placeholder="Ex., Ram Bo"
             value={form.name}
             handleChange={handleChange}
           />
