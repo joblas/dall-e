@@ -69,7 +69,7 @@ const Home = () => {
 
       <div className="mt-16">
         <FormField
-          labelName="Search thru posts"
+          labelName="Search through posts below"
           type="text"
           name="text"
           placeholder="Search posts..."
