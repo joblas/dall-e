@@ -28,7 +28,15 @@ router.route('/').get(async (req, res) => {
 router.route('/').post(async (req, res) => {
   try {
     const { name, prompt, photo } = req.body;
-    const photoUrl = await cloudinary.uploader.upload(photo, {fetch_format: 'webp', quality: 'auto'});
+    const photoUrl = await cloudinary.uploader.upload(photo, {
+      fetch_format: 'auto',
+      quality: 'auto',
+      transformation: [
+        {width: 1000, crop: "scale"},
+        {quality: "auto"},
+        {fetch_format: "auto"}
+      ]
+    });
 
     const newPost = await Post.create({
       name,
@@ -41,5 +49,6 @@ router.route('/').post(async (req, res) => {
     res.status(500).json({ success: false, message: 'Unable to create a post, please try again' });
   }
 });
+
 
 export default router;

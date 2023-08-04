@@ -8,4 +8,3 @@ cloudinary.config({
   fetch_format: 'webp',
   quality: 'auto',
 });
-
