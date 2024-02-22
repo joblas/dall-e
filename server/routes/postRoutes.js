@@ -1,12 +1,22 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
 import { v2 as cloudinary } from 'cloudinary';
+import rateLimit from 'express-rate-limit'; // Import express-rate-limit
 
 import Post from '../mongodb/models/post.js';
 
 dotenv.config();
 
+// Configure rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: 100, // limit each IP to 100 requests per window
+});
+
 const router = express.Router();
+
+// Apply the rate limiter to all requests in this router
+router.use(limiter);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -32,9 +42,9 @@ router.route('/').post(async (req, res) => {
       fetch_format: 'auto',
       quality: 'auto',
       transformation: [
-        {width: 1000, crop: "scale"},
-        {quality: "auto"},
-        {fetch_format: "auto"}
+        { width: 1000, crop: "scale" },
+        { quality: "auto" },
+        { fetch_format: "auto" }
       ]
     });
 
@@ -49,6 +59,5 @@ router.route('/').post(async (req, res) => {
     res.status(500).json({ success: false, message: 'Unable to create a post, please try again' });
   }
 });
-
 
 export default router;
