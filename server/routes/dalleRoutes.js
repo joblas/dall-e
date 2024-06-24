@@ -1,20 +1,18 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
-import { Configuration, OpenAI } from 'openai';
+import OpenAI from 'openai';
 
 dotenv.config();
 
 const router = express.Router();
 
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const openai = new OpenAIApi(configuration);
-
 router.route('/').get((req, res) => {
-  res.send({ message: 'Hello from DALL-E! ON the Render.com server' });
+  res.status(200).json({ message: 'Hello from DALL-E! ON the Render.com server' });
 });
 
 router.route('/').post(async (req, res) => {
