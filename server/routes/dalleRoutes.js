@@ -14,7 +14,7 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 router.route('/').get((req, res) => {
-  res.status(200).json({ message: 'Hello from DALL-E! ON the Render.com server' });
+  res.send({ message: 'Hello from DALL-E! ON the Render.com server' });
 });
 
 router.route('/').post(async (req, res) => {
