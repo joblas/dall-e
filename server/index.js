@@ -17,14 +17,15 @@ app.use('/api/v1/dalle', dalleRoutes);
 
 app.get('/', async (req, res) => {
   res.status(200).json({
-    message: 'Hello funboi from DALL.E! ON Render.com server',
+    message: 'Hello funboi from DALL.E! server',
   });
 });
 
 const startServer = async () => {
   try {
-    connectDB(process.env.MONGODB_URL);
-    app.listen(8080, () => console.log('Server has started on port http://localhost:8080'));
+    await connectDB(process.env.MONGODB_URL);
+    const port = process.env.PORT || 8080;
+    app.listen(port, () => console.log(`Server has started on port http://localhost:${port}`));
   } catch (error) {
     console.log(error);
   }
