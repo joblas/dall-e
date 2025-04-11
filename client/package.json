@@ -19,7 +19,11 @@
   "devDependencies": {
     "@types/react": "^18.0.26",
     "@types/react-dom": "^18.0.9",
+<<<<<<< HEAD
     "@vitejs/plugin-react": "^4.2.0",
+=======
+    "@vitejs/plugin-react": "^4.3.4",
+>>>>>>> 0e5d5a876887590c28ccb75f9d8a98b9d461c892
     "autoprefixer": "^10.4.13",
     "esbuild": "^0.25.2",
     "eslint": "^8.31.0",
