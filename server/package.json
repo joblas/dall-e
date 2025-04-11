@@ -7,7 +7,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "node server/index.js"
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -17,7 +17,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-    "mongoose": "^6.10.3",
+    "mongoose": "^6.13.6",
     "nodemon": "^3.0.1",
     "openai": "^4.28.0"
   },
