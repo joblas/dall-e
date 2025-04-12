@@ -36,6 +36,16 @@ router.route('/').post(async (req, res) => {
   } catch (error) {
     console.error('OpenAI API error:', error);
     
+    // Check for specific billing error
+    if (error.code === 'billing_hard_limit_reached' || 
+        (error.error && error.error.code === 'billing_hard_limit_reached')) {
+      return res.status(402).json({ 
+        success: false, 
+        message: 'OpenAI billing limit reached. Please check your OpenAI account.',
+        error: 'The API key has reached its billing limit. Please update your payment information in your OpenAI account.'
+      });
+    }
+    
     // Always return JSON response, even for errors
     res.status(500).json({ 
       success: false, 

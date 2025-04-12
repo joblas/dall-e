@@ -45,25 +45,27 @@ const CreatePost = () => {
 
         console.log('Response status:', response.status);
         
-        // Check if response is ok before trying to parse JSON
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Server response error:', response.status, errorText);
-          throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
-        }
+        // Get the response text first
+        const responseText = await response.text();
+        console.log('Response text:', responseText.substring(0, 100) + '...');
         
-        // Try to parse JSON response
+        // Try to parse the response text as JSON
         let data;
         try {
-          const responseText = await response.text();
-          console.log('Response text:', responseText.substring(0, 100) + '...');
-          
-          // Try to parse the response text as JSON
           data = JSON.parse(responseText);
-          console.log('Parsed data successfully:', data ? 'Data exists' : 'No data');
         } catch (jsonError) {
           console.error('JSON parsing error:', jsonError);
           throw new Error('Failed to parse server response as JSON');
+        }
+        
+        // Check for specific errors
+        if (!response.ok) {
+          // Check for billing limit error (HTTP 402 Payment Required)
+          if (response.status === 402) {
+            throw new Error('OpenAI billing limit reached: ' + (data.error || data.message));
+          }
+          
+          throw new Error(data.error || data.message || `Server error: ${response.status}`);
         }
         
         if (!data || !data.photo) {
@@ -75,7 +77,14 @@ const CreatePost = () => {
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
       } catch (err) {
         console.error('Image generation error:', err);
-        setError(err.message || 'Something went wrong while generating the image');
+        
+        // Set a more user-friendly error message for billing issues
+        if (err.message && err.message.includes('billing limit')) {
+          setError('The OpenAI account has reached its billing limit. Please contact the administrator to update the payment information.');
+        } else {
+          setError(err.message || 'Something went wrong while generating the image');
+        }
+        
         alert(err.message || 'Something went wrong while generating the image');
       } finally {
         setGeneratingImg(false);
