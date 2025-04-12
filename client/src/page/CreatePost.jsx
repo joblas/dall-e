@@ -145,8 +145,10 @@ const CreatePost = () => {
   return (
     <section className="max-w-7xl mx-auto">
       <div>
-        <h1 className="font-extrabold text-[#222328] text-[32px]">Create</h1>
-        <p className="mt-2 text-[#666e75] text-[14px] max-w-[500px]">Below enter your name then add some descriptive prompts and let DALL-E AI do magic. Share it with the community when satisfied with the image</p>
+        <h1 className="font-extrabold text-text-primary dark:text-text-primary-dark text-[32px] sm:text-[40px] transition-colors duration-200">Create</h1>
+        <p className="mt-2 text-text-secondary dark:text-text-secondary-dark text-[14px] max-w-[500px] transition-colors duration-200">
+          Below enter your name then add some descriptive prompts and let DALL-E AI do magic. Share it with the community when satisfied with the image
+        </p>
       </div>
 
       <form className="mt-16 max-w-3xl" onSubmit={handleSubmit}>
@@ -171,7 +173,7 @@ const CreatePost = () => {
             handleSurpriseMe={handleSurpriseMe}
           />
 
-          <div className="relative bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 w-64 p-3 h-64 flex justify-center items-center">
+          <div className="relative bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100 text-sm rounded-lg focus:ring-primary focus:border-primary w-64 p-3 h-64 flex justify-center items-center transition-colors duration-200 sm:w-96 sm:h-96">
             { form.photo ? (
               <img
                 src={form.photo}
@@ -195,26 +197,30 @@ const CreatePost = () => {
         </div>
 
         {error && (
-          <div className="mt-2 text-red-500 text-sm">
+          <div className="mt-2 text-red-500 dark:text-red-400 text-sm">
             Error: {error}
           </div>
         )}
 
-        <div className="mt-5 flex gap-5">
+        <div className="mt-5 flex flex-wrap gap-3">
           <button
             type="button"
             onClick={generateImage}
-            className=" text-white bg-green-700 font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center"
+            className="text-white bg-green-700 hover:bg-green-800 dark:bg-green-600 dark:hover:bg-green-700 font-medium rounded-md text-sm px-5 py-2.5 text-center transition-colors duration-200 shadow-sm hover:shadow-md"
+            disabled={generatingImg}
           >
             {generatingImg ? 'Generating...' : 'Generate'}
           </button>
         </div>
 
         <div className="mt-10">
-          <p className="mt-2 text-[#666e75] text-[14px]">** Once you have created the image you want, you can share it with others in the community **</p>
+          <p className="mt-2 text-text-secondary dark:text-text-secondary-dark text-[14px] transition-colors duration-200">
+            ** Once you have created the image you want, you can share it with others in the community **
+          </p>
           <button
             type="submit"
-            className="mt-3 text-white bg-[#6469ff] font-medium rounded-md text-sm w-full sm:w-auto px-5 py-2.5 text-center"
+            className="mt-3 text-white bg-primary hover:bg-primary-dark font-medium rounded-md text-sm px-5 py-2.5 text-center transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading || !form.prompt || !form.photo || !form.name}
           >
             {loading ? 'Sharing...' : 'Share with the Community'}
           </button>
