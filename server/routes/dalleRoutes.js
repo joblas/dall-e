@@ -19,18 +19,19 @@ router.route('/').post(async (req, res) => {
   try {
     const { prompt } = req.body;
 
-    // Corrected method call to match OpenAI SDK
-    const aiResponse = await openai.createImage({
+    // Use the current OpenAI SDK method
+    const aiResponse = await openai.images.generate({
       prompt,
       n: 1,
       size: '1024x1024',
+      response_format: 'b64_json',
     });
 
-    // Corrected access to the image data
-    const image = aiResponse.data.data[0].url;
+    // Access the image data correctly
+    const image = aiResponse.data[0].b64_json;
     res.status(200).json({ photo: image });
   } catch (error) {
-    console.log(error);
+    console.error('OpenAI API error:', error);
     res.status(500).send(error?.response?.data?.error?.message || 'Something went wrong');
   }
 });

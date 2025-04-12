@@ -27,17 +27,23 @@ cloudinary.config({
 // GET ALL POSTS
 router.route('/').get(async (req, res) => {
   try {
+    console.log('Attempting to fetch all posts...');
     const posts = await Post.find({});
+    console.log(`Successfully fetched ${posts.length} posts`);
     res.status(200).json({ success: true, data: posts });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Fetching posts failed, please try again' });
+    console.error('Error fetching posts:', err);
+    res.status(500).json({ success: false, message: 'Fetching posts failed, please try again', error: err.message });
   }
 });
 
 // CREATE A POST
 router.route('/').post(async (req, res) => {
   try {
+    console.log('Attempting to create a new post...');
     const { name, prompt, photo } = req.body;
+    
+    console.log('Uploading image to Cloudinary...');
     const photoUrl = await cloudinary.uploader.upload(photo, {
       fetch_format: 'auto',
       quality: 'auto',
@@ -47,16 +53,20 @@ router.route('/').post(async (req, res) => {
         { fetch_format: "auto" }
       ]
     });
+    console.log('Image uploaded successfully:', photoUrl.url);
 
+    console.log('Creating new post in MongoDB...');
     const newPost = await Post.create({
       name,
       prompt,
       photo: photoUrl.url,
     });
+    console.log('Post created successfully with ID:', newPost._id);
 
     res.status(201).json({ success: true, data: newPost });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Unable to create a post, please try again' });
+    console.error('Error creating post:', err);
+    res.status(500).json({ success: false, message: 'Unable to create a post, please try again', error: err.message });
   }
 });
 
