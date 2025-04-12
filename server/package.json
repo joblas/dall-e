@@ -7,11 +7,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-<<<<<<< HEAD
     "start": "node index.js"
-=======
-    "start": "node server/index.js"
->>>>>>> c920fbd344df1594dbdfa393d234162e238b6253
   },
   "author": "",
   "license": "ISC",
@@ -21,15 +17,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
-<<<<<<< HEAD
-<<<<<<< HEAD
-    "mongoose": "^6.13.6",
-=======
     "mongoose": "^8.8.3",
->>>>>>> 0e5d5a876887590c28ccb75f9d8a98b9d461c892
-=======
-    "mongoose": "^8.8.3",
->>>>>>> c920fbd344df1594dbdfa393d234162e238b6253
     "nodemon": "^3.0.1",
     "openai": "^4.28.0"
   },
