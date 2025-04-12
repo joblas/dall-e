@@ -19,6 +19,8 @@ router.route('/').post(async (req, res) => {
   try {
     const { prompt } = req.body;
 
+    console.log('Generating image with prompt:', prompt);
+
     // Use the current OpenAI SDK method
     const aiResponse = await openai.images.generate({
       prompt,
@@ -29,10 +31,17 @@ router.route('/').post(async (req, res) => {
 
     // Access the image data correctly
     const image = aiResponse.data[0].b64_json;
+    console.log('Image generated successfully');
     res.status(200).json({ photo: image });
   } catch (error) {
     console.error('OpenAI API error:', error);
-    res.status(500).send(error?.response?.data?.error?.message || 'Something went wrong');
+    
+    // Always return JSON response, even for errors
+    res.status(500).json({ 
+      success: false, 
+      message: 'Image generation failed',
+      error: error?.response?.data?.error?.message || error.message || 'Something went wrong'
+    });
   }
 });
 

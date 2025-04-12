@@ -16,6 +16,7 @@ const CreatePost = () => {
 
   const [generatingImg, setGeneratingImg] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -28,6 +29,10 @@ const CreatePost = () => {
     if (form.prompt) {
       try {
         setGeneratingImg(true);
+        setError('');
+        
+        console.log('Sending request to DALL-E API with prompt:', form.prompt);
+        
         const response = await fetch('https://dall-e-zf26.onrender.com/api/v1/dalle', {
           method: 'POST',
           headers: {
@@ -38,14 +43,45 @@ const CreatePost = () => {
           }),
         });
 
-        const data = await response.json();
+        console.log('Response status:', response.status);
+        
+        // Check if response is ok before trying to parse JSON
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server response error:', response.status, errorText);
+          throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
+        }
+        
+        // Try to parse JSON response
+        let data;
+        try {
+          const responseText = await response.text();
+          console.log('Response text:', responseText.substring(0, 100) + '...');
+          
+          // Try to parse the response text as JSON
+          data = JSON.parse(responseText);
+          console.log('Parsed data successfully:', data ? 'Data exists' : 'No data');
+        } catch (jsonError) {
+          console.error('JSON parsing error:', jsonError);
+          throw new Error('Failed to parse server response as JSON');
+        }
+        
+        if (!data || !data.photo) {
+          console.error('Missing photo data in response:', data);
+          throw new Error('No image data received from server');
+        }
+        
+        console.log('Image data received successfully');
         setForm({ ...form, photo: `data:image/jpeg;base64,${data.photo}` });
       } catch (err) {
-        alert(err);
+        console.error('Image generation error:', err);
+        setError(err.message || 'Something went wrong while generating the image');
+        alert(err.message || 'Something went wrong while generating the image');
       } finally {
         setGeneratingImg(false);
       }
     } else {
+      setError('Please provide a prompt');
       alert('Please provide proper prompt');
     }
   };
@@ -55,7 +91,14 @@ const CreatePost = () => {
 
     if (form.prompt && form.photo) {
       setLoading(true);
+      setError('');
       try {
+        console.log('Submitting post with data:', {
+          name: form.name,
+          prompt: form.prompt,
+          photoLength: form.photo ? form.photo.length : 0,
+        });
+        
         const response = await fetch('https://dall-e-zf26.onrender.com/api/v1/post', {
           method: 'POST',
           headers: {
@@ -64,15 +107,28 @@ const CreatePost = () => {
           body: JSON.stringify({ ...form }),
         });
 
+        console.log('Post response status:', response.status);
+        
+        // Check if response is ok before trying to parse JSON
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server response error:', response.status, errorText);
+          throw new Error(`Server error: ${response.status} - ${errorText.substring(0, 100)}`);
+        }
+        
         await response.json();
+        console.log('Post shared successfully');
         alert('Success');
         navigate('/');
       } catch (err) {
-        alert(err);
+        console.error('Post submission error:', err);
+        setError(err.message || 'Something went wrong while sharing your post');
+        alert(err.message || 'Something went wrong while sharing your post');
       } finally {
         setLoading(false);
       }
     } else {
+      setError('Please generate an image with proper details');
       alert('Please generate an image with proper details');
     }
   };
@@ -128,6 +184,12 @@ const CreatePost = () => {
             )}
           </div>
         </div>
+
+        {error && (
+          <div className="mt-2 text-red-500 text-sm">
+            Error: {error}
+          </div>
+        )}
 
         <div className="mt-5 flex gap-5">
           <button
