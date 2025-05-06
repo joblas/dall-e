@@ -32,7 +32,16 @@ app.get('/api', async (req, res) => {
 });
 
 // For any other route, serve the React app
-app.get('*', (req, res) => {
+import rateLimit from 'express-rate-limit';
+
+// Configure rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests, please try again later.',
+});
+
+app.get('*', limiter, (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
