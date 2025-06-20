@@ -1,11 +1,24 @@
 import express from 'express';
 import * as dotenv from 'dotenv';
+import mongoose from 'mongoose';
 import { v2 as cloudinary } from 'cloudinary';
-import rateLimit from 'express-rate-limit'; // Import express-rate-limit
+import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 import Post from '../mongodb/models/post.js';
 
-dotenv.config();
+// Load environment variables from .env file
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // Configure rate limiting
 const limiter = rateLimit({
@@ -17,12 +30,6 @@ const router = express.Router();
 
 // Apply the rate limiter to all requests in this router
 router.use(limiter);
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
 
 // GET ALL POSTS
 router.route('/').get(async (req, res) => {
@@ -38,35 +45,76 @@ router.route('/').get(async (req, res) => {
 });
 
 // CREATE A POST
+// Helper function to check MongoDB connection
+const ensureMongoConnected = async () => {
+  // If we've already verified the connection is ready, we can skip this check
+  if (global.mongooseConnected && global.mongooseConnection?.readyState === 1) {
+    return true;
+  }
+  
+  // Wait for connection to be ready if it's still connecting
+  if (mongoose.connection.readyState === 2) {
+    console.log('MongoDB connection in progress, waiting for it to complete...');
+    return new Promise(resolve => {
+      mongoose.connection.once('connected', () => {
+        console.log('MongoDB connection now ready');
+        global.mongooseConnected = true;
+        resolve(true);
+      });
+    });
+  }
+  
+  // If disconnected, log an error
+  if (mongoose.connection.readyState === 0) {
+    console.error('MongoDB connection not started - unable to perform database operations');
+    return false;
+  }
+  
+  return mongoose.connection.readyState === 1;
+};
+
 router.route('/').post(async (req, res) => {
   try {
-    console.log('Attempting to create a new post...');
+    // 1. Ensure MongoDB is connected
+    if (!(await ensureMongoConnected())) {
+      return res.status(503).json({
+        success: false,
+        message: 'Database not connected. Could not save post.',
+      });
+    }
+
+    // 2. Get and validate input from request body
     const { name, prompt, photo } = req.body;
-    
+    if (!name || !prompt || !photo) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide name, prompt, and photo.',
+      });
+    }
+
+    // 3. Upload image to Cloudinary and create post in DB
     console.log('Uploading image to Cloudinary...');
-    const photoUrl = await cloudinary.uploader.upload(photo, {
-      fetch_format: 'auto',
-      quality: 'auto',
-      transformation: [
-        { width: 1000, crop: "scale" },
-        { quality: "auto" },
-        { fetch_format: "auto" }
-      ]
-    });
-    console.log('Image uploaded successfully:', photoUrl.url);
+    const photoUrl = await cloudinary.uploader.upload(photo);
+    console.log('Image uploaded successfully to Cloudinary.');
 
     console.log('Creating new post in MongoDB...');
     const newPost = await Post.create({
       name,
       prompt,
-      photo: photoUrl.url,
+      photo: photoUrl.secure_url, // Use the secure URL from Cloudinary
     });
-    console.log('Post created successfully with ID:', newPost._id);
+    console.log('Post created successfully in MongoDB.');
 
+    // 4. Send success response
     res.status(201).json({ success: true, data: newPost });
-  } catch (err) {
-    console.error('Error creating post:', err);
-    res.status(500).json({ success: false, message: 'Unable to create a post, please try again', error: err.message });
+
+  } catch (error) {
+    console.error('Error creating post:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create post. Please try again.',
+      error: error.message,
+    });
   }
 });
 

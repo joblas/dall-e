@@ -3,76 +3,72 @@ import * as dotenv from 'dotenv';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import rateLimit from 'express-rate-limit';
 
 import connectDB from './mongodb/connect.js';
 import postRoutes from './routes/postRoutes.js';
 import dalleRoutes from './routes/dalleRoutes.js';
 
-dotenv.config();
-
-// Get the directory name using ES module syntax
+// Setup paths and load environment variables
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 const app = express();
+
+// Middleware
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-app.use('/api/v1/post', postRoutes);
-app.use('/api/v1/dalle', dalleRoutes);
-
-// Serve static files from the client's build directory
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-// Handle API routes first
-app.get('/api', async (req, res) => {
-  res.status(200).json({
-    message: 'Hello funboi from DALL.E! server',
-  });
-});
-
-// For any other route, serve the React app
-import rateLimit from 'express-rate-limit';
-
-// Configure rate limiter: maximum of 100 requests per 15 minutes
+// Rate Limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests, please try again later.',
+  message: 'Too many requests from this IP, please try again after 15 minutes',
 });
 
-app.get('*', limiter, (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+// API Routes
+app.use('/api/v1', limiter);
+app.use('/api/v1/post', postRoutes);
+app.use('/api/v1/dalle', dalleRoutes);
+
+// Static Files for Frontend
+const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+app.use(express.static(clientDistPath));
+
+// Catch-all for client-side routing
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
+// Start Server
 const startServer = async () => {
+  const port = process.env.PORT || 8081;
+  app.listen(port, () => {
+    console.log(`Server has started on port http://localhost:${port}`);
+  });
+
   try {
-    console.log('Starting server...');
+    // Process MongoDB URL to strip prefix if present
+    let mongoUrl = process.env.MONGODB_URL;
     
-    // Check if MongoDB URL is defined
-    if (!process.env.MONGODB_URL) {
-      throw new Error('MONGODB_URL is not defined in environment variables');
+    if (mongoUrl) {
+      // Check for and strip the 'MONGODB_URL=' prefix if it exists
+      if (mongoUrl.startsWith('MONGODB_URL=')) {
+        console.warn('WARNING: Detected "MONGODB_URL=" prefix in the MONGODB_URL environment variable. Stripping it.');
+        mongoUrl = mongoUrl.substring('MONGODB_URL='.length);
+      }
+      
+      // Ensure URL starts with mongodb:// or mongodb+srv://
+      if (!mongoUrl.startsWith('mongodb://') && !mongoUrl.startsWith('mongodb+srv://')) {
+        throw new Error('Invalid MongoDB URL format. Must start with mongodb:// or mongodb+srv://');
+      }
     }
     
-    // Connect to MongoDB
-    await connectDB(process.env.MONGODB_URL);
-    
-    // Define port
-    const port = process.env.PORT || 8080;
-    
-    // Start listening
-    app.listen(port, () => {
-      console.log(`Server has started on port http://localhost:${port}`);
-      console.log('API endpoints available:');
-      console.log(`- GET /api/v1/post: Fetch all posts`);
-      console.log(`- POST /api/v1/post: Create a new post`);
-      console.log(`- GET /api/v1/dalle: DALL-E API info`);
-      console.log(`- POST /api/v1/dalle: Generate an image with DALL-E`);
-    });
+    await connectDB(mongoUrl);
+    console.log('MongoDB connected successfully.');
   } catch (error) {
-    console.error('Failed to start server:', error);
-    console.error('Please check your environment variables and connections');
-    process.exit(1); // Exit with error code
+    console.error('Failed to connect to MongoDB', error);
   }
 };
 
