@@ -2,13 +2,20 @@ import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 
 const DarkModeToggle = () => {
-  const { darkMode, toggleDarkMode } = useTheme();
+  const { darkMode, toggleDarkMode, initialized } = useTheme();
+
+  // Don't render anything until theme is initialized
+  // This prevents flash of incorrect theme during hydration
+  if (!initialized) {
+    return null;
+  }
 
   return (
     <button
       onClick={toggleDarkMode}
       className="flex items-center justify-center w-10 h-10 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-primary-dark"
       aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      type="button"
     >
       {darkMode ? (
         // Sun icon for light mode
@@ -17,6 +24,7 @@ const DarkModeToggle = () => {
           className="h-5 w-5 text-yellow-300"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path
             fillRule="evenodd"
@@ -31,6 +39,7 @@ const DarkModeToggle = () => {
           className="h-5 w-5 text-gray-700"
           viewBox="0 0 20 20"
           fill="currentColor"
+          aria-hidden="true"
         >
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
         </svg>
