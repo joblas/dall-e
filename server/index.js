@@ -37,7 +37,7 @@ const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDistPath));
 
 // Catch-all for client-side routing
-app.get('*', (req, res) => {
+app.get('*', limiter, (req, res) => {
   res.sendFile(path.join(clientDistPath, 'index.html'));
 });
 
