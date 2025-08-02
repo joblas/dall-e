@@ -16,7 +16,7 @@ _Only versions marked with :white_check_mark: are actively supported with securi
 If you discover a security vulnerability in this project, please follow these steps:
 
 1. **Do not create a public issue.**  
-   Instead, email us directly at [your-security-email@example.com] or use our private security issue tracker (if available).
+   Instead, email us directly at joe@jblas-dall-e.com or use our private security issue tracker (if available).
 
 2. **Include as much detail as possible.**  
    Please describe the vulnerability, its impact, affected versions, and steps to reproduce it.
