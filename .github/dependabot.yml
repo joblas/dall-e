@@ -1,39 +1,32 @@
-# Dependabot configuration for automated security updates
+# Dependabot configuration
 # https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
+#
+# SECURITY UPDATES: Enabled via GitHub repo settings (Security > Dependabot)
+# These create PRs automatically for vulnerabilities - no config needed here.
+#
+# VERSION UPDATES: Disabled to reduce PR noise
+# Major version bumps often have breaking changes and need manual testing.
+# Re-enable by uncommenting the sections below if you want automatic version PRs.
 
 version: 2
-updates:
-  # Server dependencies (Express, Cloudinary, MongoDB, etc.)
-  - package-ecosystem: "npm"
-    directory: "/server"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "server"
-    groups:
-      # Group minor/patch updates to reduce PR noise
-      minor-and-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+updates: []
 
-  # Client dependencies (React, Vite, TailwindCSS, etc.)
-  - package-ecosystem: "npm"
-    directory: "/client"
-    schedule:
-      interval: "daily"
-    open-pull-requests-limit: 10
-    labels:
-      - "dependencies"
-      - "client"
-    groups:
-      minor-and-patch:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+# Uncomment below to re-enable version update PRs:
+#
+#  - package-ecosystem: "npm"
+#    directory: "/server"
+#    schedule:
+#      interval: "weekly"
+#    open-pull-requests-limit: 5
+#    ignore:
+#      - dependency-name: "*"
+#        update-types: ["version-update:semver-major"]
+#
+#  - package-ecosystem: "npm"
+#    directory: "/client"
+#    schedule:
+#      interval: "weekly"
+#    open-pull-requests-limit: 5
+#    ignore:
+#      - dependency-name: "*"
+#        update-types: ["version-update:semver-major"]
