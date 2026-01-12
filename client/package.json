@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@babel/runtime": "^7.28.4",
+    "@babel/runtime": "^7.28.6",
     "@lyket/react": "^2.1.0",
     "file-saver": "^2.0.5",
     "react": "^18.2.0",
